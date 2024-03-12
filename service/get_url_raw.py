@@ -8,7 +8,8 @@ import urllib.parse
 
 import requests
 
-from config.apollo_config import gitlab_private_token, gitlab_server_url
+#from config.apollo_config import gitlab_private_token, gitlab_server_url
+from config.config import gitlab_private_token, gitlab_server_url
 from utils.LogHandler import log
 
 """

@@ -64,6 +64,9 @@ def webhook():
         if verify_token == WEBHOOK_VERIFY_TOKEN and object_kind == 'push':
             # 验证通过，获取commit的信息
             print(gitlab_message)
+            project_name = gitlab_message.get('project')['name']
+            push_ref = gitlab_message.get('ref')
+
             # 获取项目id
             project_id = gitlab_message.get('project')['id']
             # 获取所有的commit的id
@@ -76,9 +79,16 @@ def webhook():
             commit_list_url = []
 
             # 遍历commit的id
+            #for i in project_commit_id:
+            #    commit_list.append(i['id'])
+            #    commit_list_url.append(i['url'])
+            last_commit_id=project_commit_id[0]['id']
+            last_commit_url=project_commit_id[0]['url']
             for i in project_commit_id:
-                commit_list.append(i['id'])
-                commit_list_url.append(i['url'])
+                last_commit_id = i['id']
+                last_commit_url = i['url']
+            commit_list.append(last_commit_id)
+            commit_list_url.append(last_commit_url)
 
             # print(project_id, version, commit_list)
             log.info(f"项目id: {project_id}，分支: {version}，commit_id: {commit_list} ")
@@ -103,7 +113,7 @@ def webhook():
             web_url commit的变更文件 
             """
             log.info(f"项目id: {project_id}，commit_id: {commit_list} 开始进行ChatGPT代码补丁审查")
-            review_code(project_id, commit_list)
+            review_code(project_id, version, commit_list)
 
             return jsonify({'status': 'success'}), 200
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2023/7/10 11:34
-# @Author  : 南宫乘风
-# @Email   : 1794748404@qq.com
-# @File    : chat_review.py
-# @Software: PyCharm
+# @Time    : 2024/03/13
+# @Author  : dengss
+# @Email   : xiaozhe@gmail.com
+
+
 import os
 import openai
 import requests
@@ -58,6 +58,14 @@ def generate_review_note(file_ext, change, project_id, branch_name, project_comm
     else:
         content = filter_diff_content(change['diff'])
         # content = ""
+    
+    print(change_diff)
+    print(content)
+    review_note = f'### `{new_path}`' + '\n\n'
+    review_note += f'\n\n未能提取提交内容**未提交到AI进行review**\n\n'
+    log.info(f'对 {new_path} review结束')
+    return review_note
+
     if len(content) <= 0:
         review_note = f'### `{new_path}`' + '\n\n'
         review_note += f'\n\n未能提取提交内容**未提交到AI进行review**\n\n'
@@ -101,7 +109,7 @@ def chat_review(project_id, branch_name, project_commit_id, content):
             try:
                 review_note = generate_review_note(file_ext, change, project_id, branch_name, project_commit_id)
                 log.info(f'对 {change["new_path"]}  , review结果如下：{review_note}')
-                post_comments(project_id, project_commit_id, review_note)
+                #post_comments(project_id, project_commit_id, review_note)
             except Exception as e:
                 log.error(f'出现异常，异常信息：{e}')
         else:
@@ -111,7 +119,7 @@ def chat_review(project_id, branch_name, project_commit_id, content):
     if len(fileListNoReview) > 0:
         try:
             sFileList='\n\n'.join(fileListNoReview)
-            post_comments(project_id, project_commit_id, f'### 以下文件**未提交到AI进行review**:\n\n' + sFileList)
+            #post_comments(project_id, project_commit_id, f'### 以下文件**未提交到AI进行review**:\n\n' + sFileList)
         except Exception as e:
             log.error(f'出现异常，异常信息：{e}')
         #log.error(f'格式不正确，对 {fileListNoReview}  , 不需要review')
@@ -138,7 +146,8 @@ def test_review_code():
     project_commit_id = ['5147c49d897bdcb8d0edd6af8c782c360a0f15fa']
     version = "E312-dss-test-01"
     review_code(project_id, version, project_commit_id)
-    
+
+
 def test_review_code_2():
     project_id = 5
     project_commit_id = ['418ceb3d4c9cf9b99b6b72d3efc07291d01a687c']
