@@ -94,10 +94,10 @@ def get_node_by_line_num(_ret_nodes, _node, _line_num):
     list_function.clear()
     #print( "-------------------------tree-detter-line num : " + str(_line_num) + "--------------------------")
     get_node_by_line_num_traverse(list_declaration, list_function, _node, _line_num, 0)
-    if len(list_declaration) > 0 :
-        _ret_nodes.append(list_declaration[0])
     if len(list_function) > 0 :
         _ret_nodes.append(list_function[0])
+    elif len(list_declaration) > 0 :
+        _ret_nodes.append(list_declaration[0])
 
     ## if len(list_declaration) > 0 :
     ##     # print node_declaration
