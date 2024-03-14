@@ -14,7 +14,12 @@ from flask import Flask, jsonify, make_response
 
 from app.chat import chat
 from app.git import git
+from app.git import thread_start
 from utils.LogHandler import log
+
+from config.config import WEB_APP_HOST
+from config.config import WEB_APP_PORT
+from config.config import WEB_APP_DEBUG
 
 app = Flask(__name__)
 app.config['debug'] = True
@@ -38,7 +43,12 @@ def handle_error(error):
 
 
 if __name__ == '__main__':
+    thread_start();
+
     os.environ['STABILITY_HOST'] = 'grpc.stability.ai:443'
     app.config['JSON_AS_ASCII'] = False
     log.info('Starting the app...')
-    app.run(debug=True, host="0.0.0.0", use_reloader=False)
+    app.run(debug=WEB_APP_DEBUG, host=WEB_APP_HOST,port=WEB_APP_PORT, use_reloader=False)
+
+    
+

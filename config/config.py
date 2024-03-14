@@ -43,9 +43,30 @@ ERROR_VIOLATION_POLICIES = {
 如果没有apollo配置中心，可以直接在这里配置
 """
 
+# WEBHOOK_VERIFY_TOKEN = "asdhiqbryuwfqodwgeayrgfbsifbd"
+# gitlab_server_url = gitlab_server_url
+# gitlab_private_token = gitlab_private_token
+# openai_api_key = openai_api_key
+# openai_baseurl = "https://api.openai.com/v1"
+# openai_model_name = "gpt-3.5-turbo"
+
+#default is "0.0.0.0
+WEB_APP_HOST="0.0.0.0"
+#default is 80
+WEB_APP_PORT=80
+#default is True
+WEB_APP_DEBUG=True
+
 WEBHOOK_VERIFY_TOKEN = "asdhiqbryuwfqodwgeayrgfbsifbd"
 gitlab_server_url = gitlab_server_url
 gitlab_private_token = gitlab_private_token
+
 openai_api_key = openai_api_key
 openai_baseurl = "https://api.openai.com/v1"
 openai_model_name = "gpt-3.5-turbo"
+
+
+
+
+
+

@@ -13,12 +13,25 @@ from config.config import WEBHOOK_VERIFY_TOKEN
 from service.chat_review import review_code
 from utils.LogHandler import log
 
+import queue
+import threading
+import time
+import signal
+import sys
+
+qCmmitList = queue.Queue(100)
+#lockList = Lock.Lock()
+semThread = threading.Condition()
+iIsStopRun = 0
+iIsEndedDeal = 0
+
 git = Blueprint('git', __name__)
 """
 git的蓝图
 
 主要功能：获取gitlab的webhook，进行代码检查
 """
+
 
 
 @git.route('/api')
@@ -28,6 +41,8 @@ def question():
 
 @git.route('/webhook', methods=['GET', 'POST'])
 def webhook():
+    global semThread
+    global qCmmitList
     """
     gitlab的webhook,用来接受gitlab的推送
     http://192.168.96.19:5000/git/webhook
@@ -91,9 +106,9 @@ def webhook():
             commit_list_url.append(last_commit_url)
 
             # print(project_id, version, commit_list)
-            log.info(f"项目id: {project_id}，分支: {version}，commit_id: {commit_list} ")
+            #log.info(f"项目id: {project_id}，分支: {version}，commit_id: {commit_list} ")
             # 440 dev ['df4fa64a43f9b227c90d46a71556b717812635ca']
-            log.info(f"项目id: {project_id}，commit_url: {commit_list_url}")
+            log.info(f"项目id: {project_id}，分支: {version}，commit_url: {commit_list_url}")
             # print(commit_list_url)
             # ['https://gitlab.xxx.com/risk/xxx-risk-xxx/-/commit/df4fa64a43f9b227c90d46a71556b717812635ca']
             #
@@ -112,8 +127,14 @@ def webhook():
             commit_list_url commit的url
             web_url commit的变更文件 
             """
-            log.info(f"项目id: {project_id}，commit_id: {commit_list} 开始进行ChatGPT代码补丁审查")
-            review_code(project_id, version, commit_list)
+            #log.info(f"项目id: {project_id}，commit_id: {commit_list} 开始进行ChatGPT代码补丁审查")
+            #review_code(project_id, version, commit_list)
+            
+            itemCommit = [project_id, version, commit_list]
+            semThread.acquire()
+            qCmmitList.put(itemCommit)
+            semThread.notify()
+            semThread.release()
 
             return jsonify({'status': 'success'}), 200
 
@@ -123,3 +144,49 @@ def webhook():
 
     else:
         abort(400)
+
+def signal_handler(signum, frame):
+    global iIsStopRun
+    global iIsEndedDeal
+    global semThread
+    iIsStopRun = 1
+    semThread.acquire()
+    semThread.notify()
+    semThread.release()
+    while iIsEndedDeal != 1 :
+        time.sleep(1)
+        print("wait for deal end")
+    print("exit......")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT,signal_handler)
+
+def thread_start():
+    t_deal = threading.Thread(target=thread_run)
+    t_deal.start()
+
+def thread_run():
+    global iIsStopRun
+    global iIsEndedDeal
+    global semThread
+    global qCmmitList
+    while True :
+        semThread.acquire()
+        semThread.wait()
+        if iIsStopRun == 1 :
+            semThread.release()
+            iIsEndedDeal = 1
+            break
+        itemCommit=[]
+        #lockList.lock()
+        if not qCmmitList.empty():
+            itemCommit=qCmmitList.get()
+        #lockList.unlock()
+        semThread.release()
+        # log.info(f"get itemcommit len :" + str(len(itemCommit)))
+        if len(itemCommit) > 0:
+            project_id = itemCommit[0]
+            version = itemCommit[1]
+            commit_list = itemCommit[2]
+            log.info(f"项目id: {project_id}，分支: {version}，commit_id: {commit_list} 开始进行ChatGPT代码补丁审查")
+            review_code(project_id, version, commit_list)

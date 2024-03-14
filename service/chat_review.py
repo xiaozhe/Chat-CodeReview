@@ -122,6 +122,7 @@ def chat_review(project_id, branch_name, project_commit_id, content):
 
 @retry(stop_max_attempt_number=3, wait_fixed=2000)
 def review_code(project_id, branch_name, project_commit_id):
+    #log.info(f"开始code review 项目id: {project_id}，分支: {branch_name}，commit_id: {project_commit_id}")
     for commit_id in project_commit_id:
         url = f'{gitlab_server_url}/api/v4/projects/{project_id}/repository/commits/{commit_id}/diff'
         # log.info(f"开始请求gitlab的{url}   ,commit: {commit_id}的diff内容")
