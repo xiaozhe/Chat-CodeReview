@@ -53,7 +53,9 @@ def wait_and_retry(exception):
 def generate_review_note(file_ext, change, project_id, branch_name, project_commit_id):
     new_path = change['new_path']
     change_diff = change['diff']
-    if any(ext in file_ext for ext in ['.cpp', '.c']):
+    # 仅对cpp、c文件进行review
+    # if any(ext in file_ext for ext in ['.cpp', '.c']):
+    if( file_ext in ['.c', '.cpp']):    
         content = filter_diff_content_cpp(change_diff, new_path, project_id, branch_name, project_commit_id)
     else:
         content = filter_diff_content(change['diff'])
@@ -97,7 +99,8 @@ def chat_review(project_id, branch_name, project_commit_id, content):
         # 判断文件类型，只对py、java、class、vue文件进行review
         file_ext = os.path.splitext(change['new_path'])[1]
         #if any(ext in file_ext for ext in ['.py', '.java', '.class', '.vue', '.h', '.cpp', '.c']):
-        if any(ext in file_ext for ext in ['.h', '.cpp', '.c']):
+        #if any(ext in file_ext for ext in ['.h', '.cpp', '.c']):
+        if( file_ext in ['.h', '.cpp', '.c']):
             try:
                 review_note = generate_review_note(file_ext, change, project_id, branch_name, project_commit_id)
                 log.info(f'对 {change["new_path"]}  , review结果如下：{review_note}')
